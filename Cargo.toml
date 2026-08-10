@@ -1,0 +1,38 @@
+[package]
+name = "ubus-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Pure Rust implementation of the ubus protocol for OpenWrt, providing notify-only client functionality with both sync and async APIs"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/urlynn/ubus-rs"
+keywords = ["ubus", "openwrt", "ipc", "notify", "unix-socket"]
+categories = ["network-programming", "os::unix-apis"]
+include = [
+    "src/**",
+    "examples/**",
+    "Cargo.toml",
+    "LICENSE-*",
+    "README.md",
+]
+
+[lib]
+name = "ubus_rs"
+path = "src/lib.rs"
+
+[features]
+default = []
+# Async client (tokio-based). Disabled by default for zero-dependency sync-only usage.
+async = ["tokio"]
+
+[dependencies]
+# Async runtime (only when async feature is enabled)
+tokio = { version = "1", optional = true, features = ["net", "io-util", "time", "rt", "macros"] }
+
+[[example]]
+name = "notify_demo"
+path = "examples/notify_demo.rs"
+
+[[example]]
+name = "async_demo"
+path = "examples/async_demo.rs"
+required-features = ["async"]

@@ -1,0 +1,7 @@
+*
+!Cargo.toml
+!src/
+!examples/
+!README.md
+!LICENSE-*
+!.gitignore
