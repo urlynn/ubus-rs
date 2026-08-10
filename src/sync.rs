@@ -87,6 +87,11 @@ impl UbusClient {
     }
 
     /// Remove a previously registered object.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::UbusError::Status`] if ubusd rejects the removal,
+    /// for example when the object does not exist.
     pub fn remove_object(&mut self, objid: u32) -> Result<()> {
         let mut bb = BlobBuf::new();
         bb.put_u32(ATTR_OBJID, objid);
@@ -95,14 +100,19 @@ impl UbusClient {
         send_msg(&mut self.stream, MSG_REMOVE_OBJECT, seq, 0, &body)?;
 
         loop {
-            let (mtype, _seq, _peer, _body) = recv_msg(&mut self.stream)?;
+            let (mtype, _seq, _peer, body) = recv_msg(&mut self.stream)?;
             match mtype {
                 MSG_DATA => continue,
-                MSG_STATUS => break,
+                MSG_STATUS => {
+                    return match parse_attr_u32(&body, ATTR_STATUS) {
+                        Some(0) => Ok(()),
+                        Some(s) => Err(UbusError::Status(s)),
+                        None => Ok(()),
+                    };
+                }
                 _ => continue,
             }
         }
-        Ok(())
     }
 
     /// Send a NOTIFY message (no_reply=1, no ack required).
